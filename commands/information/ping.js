@@ -11,7 +11,6 @@ module.exports = {
         await interaction.reply({
             content: '🏓 Pinging...',
             withResponse: true, 
-            flags: MessageFlags.Ephemeral
         });
 
         // Calculate Pings
