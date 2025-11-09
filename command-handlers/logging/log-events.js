@@ -6,6 +6,7 @@ const logPath = path.resolve(__dirname, "../../data/logging");
 
 // Log an event
 function logEvent(guildId, fileName, content) {
+    return; // againt discords rules
     try {
         // Guild Folder
         const guildFolder = path.join(logPath, guildId);
