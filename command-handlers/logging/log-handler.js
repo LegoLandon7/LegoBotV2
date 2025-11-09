@@ -96,8 +96,8 @@ function loggingHandler(client) {
             logEvent(newMember.guild.id, "member-role-updates.txt", log);
             sendLog(newMember.guild, createEmbed("Roles Updated", EMBED_COLORS.MEDIUM, [
                 `• **User:** ${newMember.user.tag} (\`${newMember.user.id}\`)`,
-                `• **Added Roles:** ${addedRoles.join(", ") || "[NONE]"}`,
-                `• **Removed Roles:** ${removedRoles.join(", ") || "[NONE]"}`,
+                `• **Added Roles:** ${addedRoles.map(r => `<@&${r.id}>`).join(", ") || "[NONE]"}`,
+                `• **Removed Roles:** ${removedRoles.map(r => `<@&${r.id}>`).join(", ") || "[NONE]"}`,
                 ].join('\n'), newMember.user));
         }
 
@@ -151,7 +151,7 @@ function loggingHandler(client) {
             `• **Account Created:** ${new Date(member.user.createdTimestamp).toLocaleString()}`,
             ].join('\n'), member.user));
         sendWelcome(member.guild, createEmbed("Member Joined", EMBED_COLORS.GOOD, [
-            `• **User:** ${member}`,
+            `• **User:** ${member} | ${member.tag}`,
             `• **Joined Server:** ${new Date(member.joinedTimestamp).toLocaleString()}`,
             ].join('\n'), member.user));
     });
@@ -167,7 +167,7 @@ function loggingHandler(client) {
             `• **Account Created:** ${new Date(member.user.createdTimestamp).toLocaleString()}`,
             ].join('\n'), member.user));
         sendWelcome(member.guild, createEmbed("Member Left", EMBED_COLORS.BAD, [
-            `• **User:** ${member}`,
+            `• **User:** ${member} | ${member.tag}`,
             `• **Joined Server:** ${new Date(member.joinedTimestamp).toLocaleString()}`,
             ].join('\n'), member.user));
     });
