@@ -1,0 +1,20 @@
+# Node and environment
+node_modules/
+.env
+
+# Ignore everything in /data
+data/**
+
+# But keep the data folder itself and its subfolders
+!data/
+!data/log-channels/
+!data/logging/
+!data/utility/
+
+# Keep any subfolders inside /data/logging
+!data/logging/**/
+
+# Optional: allow .gitkeep placeholders so folders stay in repo
+!data/log-channels/.gitkeep
+!data/logging/.gitkeep
+!data/utility/.gitkeep
