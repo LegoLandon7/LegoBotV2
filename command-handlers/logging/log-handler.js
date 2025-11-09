@@ -1,5 +1,4 @@
 const { EmbedBuilder } = require('discord.js');
-const { logEvent } = require("./log-events.js");
 const { formatDuration } = require("../../functions/formatting/format-duration.js");
 const { EMBED_COLORS } = require("../../functions/global/global-vars.js");
 const { getLogChannel, getWelcomeChannel } = require("./save-log-channels.js");
@@ -39,11 +38,6 @@ function loggingHandler(client) {
     client.on("messageUpdate", (oldMessage, newMessage) => {
         if (oldMessage.content === newMessage.content) return;
 
-        const timestamp = new Date(newMessage.createdTimestamp).toLocaleString();
-        const log = `[${timestamp}] (${newMessage.author.tag} | ${newMessage.author.id}) (#${newMessage.channel.name})\n\tOLD: "${oldMessage.content || "[NONE]"}"\n\tNEW: "${newMessage.content || "[NONE]"}"` +
-                (newMessage.attachments.size ? `\n\tATTACHMENTS: ${newMessage.attachments.map(a => a.name || a.url).join(', ')}` : '');
-
-        logEvent(newMessage.guild.id, "message-updates.txt", log);
         sendLog(newMessage.guild, createEmbed("Message Updated", EMBED_COLORS.MEDIUM, [
             `• **User:** ${newMessage.author.tag} (\`${newMessage.author.id}\`)`,
             `• **Channel:** ${newMessage.channel}`,
@@ -55,11 +49,6 @@ function loggingHandler(client) {
 
     // Message Deleted
     client.on("messageDelete", (message) => {
-        const timestamp = new Date(message.createdTimestamp).toLocaleString();
-        const log = `[${timestamp}] (${message.author.tag} | ${message.author.id}) (#${message.channel.name})\n\tDELETED: "${message.content || "[NONE]"}"` +
-            (message.attachments.size ? `\n\tATTACHMENTS: ${message.attachments.map(a => a.name || a.url).join(', ')}` : '');
-
-        logEvent(message.guild.id, "message-removed.txt", log);
         sendLog(message.guild, createEmbed("Message Removed", EMBED_COLORS.BAD, [
             `• **User:** ${message.author.tag} (\`${message.author.id}\`)`,
             `• **Channel:** ${message.channel}`,
@@ -69,50 +58,28 @@ function loggingHandler(client) {
         });
 
     client.on("guildMemberUpdate", (oldMember, newMember) => {
-        const timestamp = new Date().toLocaleString();
-
         // Avatar Updated
         if (oldMember.user.avatar !== newMember.user.avatar) {
-            const log = `[${timestamp}] (${newMember.user.tag} | ${newMember.id})\n\t${newMember.user.displayAvatarURL()}`;
-
-            logEvent(newMember.guild.id, "member-avatar-updates.txt", log);
             sendLog(newMember.guild, createEmbed("Avatar Updated", EMBED_COLORS.MEDIUM, [
                 `• **User:** ${newMember.user.tag} (\`${newMember.user.id}\`)`,
                 ].join('\n'), newMember.user));
         }
 
         // Role Updated
-        const oldRoles = oldMember.roles.cache.map(r => r.name).sort();
-        const newRoles = newMember.roles.cache.map(r => r.name).sort();
+        const oldRoles = oldMember.roles.cache.map(r => r);
+        const newRoles = newMember.roles.cache.map(r => r);
 
-        const addedRoles = newRoles.filter(id => !oldRoles.includes(id));
-        const removedRoles = oldRoles.filter(id => !newRoles.includes(id));
+        const addedRoles = newRoles.filter(r => !oldRoles.some(o => o.id === r.id));
+        const removedRoles = oldRoles.filter(r => !newRoles.some(n => n.id === r.id));
 
         if (addedRoles.length || removedRoles.length) {
-            let log = `[${timestamp}] (${newMember.user.tag} | ${newMember.id}) `;
-            if (addedRoles.length) log += `\n\tADDED ROLES: ${addedRoles.join(", ")}`
-            if (removedRoles.length) log += `\n\tREMOVED ROLES: ${removedRoles.join(", ")}`
+            
 
-            logEvent(newMember.guild.id, "member-role-updates.txt", log);
             sendLog(newMember.guild, createEmbed("Roles Updated", EMBED_COLORS.MEDIUM, [
                 `• **User:** ${newMember.user.tag} (\`${newMember.user.id}\`)`,
                 `• **Added Roles:** ${addedRoles.map(r => `<@&${r.id}>`).join(", ") || "[NONE]"}`,
                 `• **Removed Roles:** ${removedRoles.map(r => `<@&${r.id}>`).join(", ") || "[NONE]"}`,
-                ].join('\n'), newMember.user));
-        }
-
-        // Nickname Updated
-        const oldNick = oldMember.nickname || oldMember.user.username;
-        const newNick = newMember.nickname || newMember.user.username;
-
-        if (oldNick !== newNick) {
-            const log = `[${timestamp}] (${newMember.user.tag} | ${newMember.id})\n\tOLD: "${oldNick}"\n\tNEW: "${newNick}"`;
-            logEvent(newMember.guild.id, "member-nicknames.txt", log);
-            sendLog(newMember.guild, createEmbed("Nickname Updated", EMBED_COLORS.MEDIUM, [
-                `• **User:** ${newMember.user.tag} (\`${newMember.user.id}\`)`,
-                `• **New Nickname:** ${newNick || "[NONE]"}`,
-                `• **Old Nickname:** ${oldNick || "[NONE]"}`,
-                ].join('\n'), newMember.user));
+            ].join("\n"), newMember.user));
         }
 
         // Member Timeouts
@@ -123,16 +90,13 @@ function loggingHandler(client) {
             if (newTimeout && newTimeout > Date.now()) {
                 // Timeout applied
                 const duration = newTimeout - Date.now();
-                const log = `[${timestamp}] (${newMember.user.tag} | ${newMember.id}) TIMEOUT APPLIED -> ${formatDuration(duration)}`;
-                logEvent(newMember.guild.id, "member-timeouts.txt", log);
                 sendLog(newMember.guild, createEmbed("Timeout Added", EMBED_COLORS.BAD, [
                     `• **User:** ${newMember.user.tag} (\`${newMember.user.id}\`)`,
                     `• **Time:** ${formatDuration(duration)}`,
+                    `• **Reason:** ${newTimeout.reason}`,
                     ].join('\n'), newMember.user));
             } else if (!newTimeout || newTimeout <= Date.now()) {
                 // Timeout removed
-                const log = `[${timestamp}] (${newMember.user.tag} | ${newMember.id}) TIMEOUT REMOVED`;
-                logEvent(newMember.guild.id, "member-timeouts.txt", log);
                 sendLog(newMember.guild, createEmbed("Timeout Removed", EMBED_COLORS.GOOD, [
                     `• **User:** ${newMember.user.tag} (\`${newMember.user.id}\`)`,
                     ].join('\n'), newMember.user));
@@ -142,32 +106,24 @@ function loggingHandler(client) {
 
     // Member Join
     client.on("guildMemberAdd", (member) => {
-        const timestamp = new Date().toLocaleString();
-        const log = `[${timestamp}] (${member.user.tag} | ${member.user.id}) MEMBER JOINED`;
-
-        logEvent(member.guild.id, "member-joins-leaves.txt", log);
         sendLog(member.guild, createEmbed("Member Joined", EMBED_COLORS.GOOD, [
             `• **User:** ${member.user.tag} (\`${member.user.id}\`)`,
             `• **Account Created:** ${new Date(member.user.createdTimestamp).toLocaleString()}`,
             ].join('\n'), member.user));
         sendWelcome(member.guild, createEmbed("Member Joined", EMBED_COLORS.GOOD, [
-            `• **User:** ${member} | ${member.tag}`,
+            `• **User:** ${member} | ${member.user.tag}`,
             `• **Joined Server:** ${new Date(member.joinedTimestamp).toLocaleString()}`,
             ].join('\n'), member.user));
     });
 
     // Member Leave
     client.on("guildMemberRemove", (member) => {
-        const timestamp = new Date().toLocaleString();
-        const log = `[${timestamp}] (${member.user.tag} | ${member.user.id}) MEMBER LEFT`;
-
-        logEvent(member.guild.id, "member-joins-leaves.txt", log);
         sendLog(member.guild, createEmbed("Member Left", EMBED_COLORS.BAD, [
             `• **User:** ${member.user.tag} (\`${member.user.id}\`)`,
             `• **Account Created:** ${new Date(member.user.createdTimestamp).toLocaleString()}`,
             ].join('\n'), member.user));
         sendWelcome(member.guild, createEmbed("Member Left", EMBED_COLORS.BAD, [
-            `• **User:** ${member} | ${member.tag}`,
+            `• **User:** ${member} | ${member.user.tag}`,
             `• **Joined Server:** ${new Date(member.joinedTimestamp).toLocaleString()}`,
             ].join('\n'), member.user));
     });
@@ -175,31 +131,17 @@ function loggingHandler(client) {
     // Bulk Delete
     client.on("messageDeleteBulk", (messages) => {
         if (messages.size === 0) return;
-
-        const logLines = messages.map(msg => {
-            const timestamp = new Date(msg.createdTimestamp).toLocaleString();
-            return `\t[${timestamp}] (${msg.author.tag} | ${msg.author.id}) (#${msg.channel.name}) "${msg.content}"` +
-                (msg.attachments.size ? `\n\tATTACHMENTS: ${msg.attachments.map(a => a.name || a.url).join(', ')}` : '');
-        }).filter(Boolean);
-
-        if (logLines.length === 0) return;
-        let logMessages = logLines.join("\n");
-
-        const log = `${logLines.length} messages purged: \n${logMessages}`
+        
         if (!messages.first()) return;
-        logEvent(messages.first().guild.id, "message-purged.txt", log);
-        sendLog(messages.first().guild, createEmbed("Messages Purged", EMBED_COLORS.BAD, [
-            `• **Amount:** ${logLines.length}`,
-            `• **Channel:** ${messages.first().channel}`,
-            `• use /download-logs to view purged messages`,
-            ].join('\n'), null));
+            sendLog(messages.first().guild, createEmbed("Messages Purged", EMBED_COLORS.BAD, [
+                `• **Amount:** ${logLines.length}`,
+                `• **Channel:** ${messages.first().channel}`,
+                `• use /download-logs to view purged messages`,
+                ].join('\n'), null));
     });
 
     // Ban Member
     client.on("guildBanAdd", (ban) => {
-        const timestamp = new Date().toLocaleString();
-        const log = `[${timestamp}] (${ban.user.tag} | ${ban.user.id}) MEMBER BANNED`;
-        logEvent(ban.guild.id, "member-bans.txt", log);
         sendLog(ban.guild, createEmbed("User Banned", EMBED_COLORS.BAD, [
             `• **User:** ${ban.user.tag} (\`${ban.user.id}\`)`,
             `• **Reason:** ${ban.reason || "[NONE]"}`,
@@ -208,9 +150,7 @@ function loggingHandler(client) {
 
     // Unban Member
     client.on("guildBanRemove", (ban) => {
-        const timestamp = new Date().toLocaleString();
-        const log = `[${timestamp}] (${ban.user.tag} | ${ban.user.id}) MEMBER UNBANNED`;
-        logEvent(ban.guild.id, "member-bans.txt", log);
+        
         sendLog(ban.guild, createEmbed("User Un-banned", EMBED_COLORS.GOOD, [
             `• **User:** ${ban.user.tag} (\`${ban.user.id}\`)`,
             ].join('\n'), ban.user));

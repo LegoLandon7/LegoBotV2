@@ -26,9 +26,9 @@ module.exports = {
             name: '**Information Commands:**',
             value: [
               '• **/help** - *displays commands*',
-              '• **/user-info** - *info of a user*',
-              '• **/server-info** - *info of a server*',
-              '• **/bot-info** - *info of the bot*',
+              '• **/user info** - *info of a user*',
+              '• **/server info** - *info of a server*',
+              '• **/bot info** - *info of the bot*',
               '• **/avatar** - *avatar of a user*',
               '• **/ping** - *ping of the bot*'
             ].join('\n')
@@ -37,7 +37,7 @@ module.exports = {
             name: '**\nUtility Commands:**',
             value: [
               '• **/afk** - *go afk*',
-              '• **/get-id** - *gets id of a user*'
+              '• **/get id** - *gets id of a user*'
             ].join('\n')
           }
         ),
@@ -78,22 +78,21 @@ module.exports = {
           {
             name: '**Logging Commands:**',
             value: [
-              '• **/download-logs** - *downloads all logs as a zip*',
               '• **/set-log-channel** - *sets a log channel*',
               '• **/remove-log-channel** - *removes a log channel*',
               '• **/set-welcome-channel** - *sets a welcome channel*',
               '• **/remove-welcome-channel** - *removes a welcome channel*',
               '• **/view-log-channel** - *views the welcome channel*',
-              '• **/view-welcome-channel** - *views the welcome channel*'
+              '• **/view-welcome-channel** - *views the welcome channel*',
             ].join('\n')
           },
           {
             name: '**\nTrigger Commands:**',
             value: [
-              '• **/add-trigger** - *adds a trigger*',
-              '• **/remove-trigger** - *removes a trigger*',
-              '• **/list-triggers** - *lists all triggers*',
-              '• **/clear-triggers** - *removes every trigger*'
+              '• **/add trigger** - *adds a trigger*',
+              '• **/remove trigger** - *removes a trigger*',
+              '• **/list triggers** - *lists all triggers*',
+              '• **/clear triggers** - *removes every trigger*'
             ].join('\n')
           }
         ),
