@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, MessageFlags, Message } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, MessageFlags, Collection } = require('discord.js');
 const { EMBED_COLORS } = require('../../functions/global/global-vars');
 
 module.exports = {
@@ -23,31 +23,51 @@ module.exports = {
         const amount = interaction.options.getInteger('amount');
         const target = interaction.options.getUser('target_user');
 
-        if (!interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)) {return interaction.reply(
-            {content: '❌ You do not have permission to manage messages.',flags: MessageFlags.Ephemeral});}
+        // Permission checks
+        if (!interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
+            return interaction.reply({ content: '❌ You do not have permission to manage messages.', flags: MessageFlags.Ephemeral });
+        }
 
-        if (!interaction.guild.members.me.permissions.has(PermissionFlagsBits.ManageMessages)) {return interaction.reply(
-            {content: '❌ I do not have permission to delete messages.',flags: MessageFlags.Ephemeral });}
+        if (!interaction.guild.members.me.permissions.has(PermissionFlagsBits.ManageMessages)) {
+            return interaction.reply({ content: '❌ I do not have permission to delete messages.', flags: MessageFlags.Ephemeral });
+        }
 
-        if (amount < 1 || amount > 100) { return interaction.reply(
-            {content: '⚠️ You must specify a number between **1** and **100**.',flags: MessageFlags.Ephemeral});}
+        if (amount < 1 || amount > 100) {
+            return interaction.reply({ content: '⚠️ You must specify a number between **1** and **100**.', flags: MessageFlags.Ephemeral });
+        }
 
-        await interaction.deferReply();
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
         try {
-            let deleted;
+            // Fetch messages
+            const fetched = await interaction.channel.messages.fetch({ limit: 100 });
 
-            // Fetch messages from the channel
-            const messages = await interaction.channel.messages.fetch({ limit: 100 });
+            // Filter messages by target user if provided
+            let messagesToDelete = target
+                ? fetched.filter(msg => msg.author.id === target.id)
+                : fetched;
 
-            if (target) {
-                // Filter messages from the target user only
-                const userMessages = messages.filter(msg => msg.author.id === target.id).first(amount);
-                deleted = await interaction.channel.bulkDelete(userMessages, true);
-            } else {
-                deleted = await interaction.channel.bulkDelete(amount, true);
+            // Filter out messages older than 14 days
+            const fourteenDaysAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
+            messagesToDelete = messagesToDelete.filter(msg => msg.createdTimestamp > fourteenDaysAgo);
+
+            // Limit to requested amount
+            messagesToDelete = messagesToDelete.first(amount);
+
+            if (!messagesToDelete.length) {
+                return interaction.editReply({
+                    content: '⚠️ No messages found to delete (all messages are older than 14 days or none exist).',
+                    flags: MessageFlags.Ephemeral
+                });
             }
 
+            // Convert array back to Collection
+            const messagesCollection = new Collection(messagesToDelete.map(msg => [msg.id, msg]));
+
+            // Delete messages
+            const deleted = await interaction.channel.bulkDelete(messagesCollection, true);
+
+            // Confirmation embed
             const embed = new EmbedBuilder()
                 .setColor(EMBED_COLORS?.Bad || '#ED4245')
                 .setTitle('🧹 Messages Purged')
@@ -59,13 +79,13 @@ module.exports = {
                     iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
                 }).setTimestamp();
 
-            // Public confirmation message
             const confirmationMessage = await interaction.followUp({ embeds: [embed], flags: 0 });
 
+            // Auto-delete confirmation after 5 seconds
             setTimeout(async () => {
-                try {await confirmationMessage.delete().catch(() => {});} 
-                catch (err) {console.error(`Confirmation delete error: ${err}`);}
-            }, 5000); // 5 seconds
+                try { await confirmationMessage.delete().catch(() => {}); }
+                catch (err) { console.error(`Confirmation delete error: ${err}`); }
+            }, 5000);
 
         } catch (err) {
             console.error(`Purge error: ${err}`);

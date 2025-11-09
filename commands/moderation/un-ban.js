@@ -28,7 +28,7 @@ module.exports = {
 
         // fetch ban info
         const bans = await interaction.guild.bans.fetch();
-        let bannedUser = bans.get(userID);
+        let bannedUser = bans.get(userId);
 
         if (!bannedUser) {return interaction.editReply({
                 content: '⚠️ That user is not banned or the provided ID is invalid.',flags: MessageFlags.Ephemeral});}

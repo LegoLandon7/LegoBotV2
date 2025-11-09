@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/LegoLandon7/LegoBotV2#readme",
   "dependencies": {
+    "archiver": "^7.0.1",
     "discord.js": "^14.24.2",
     "dotenv": "^17.2.3"
   },

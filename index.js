@@ -17,8 +17,17 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
-    ]
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildModeration,
+        GatewayIntentBits.GuildMessageReactions
+    ],
+    partials: [
+        'MESSAGE', 
+        'CHANNEL', 
+        'REACTION', 
+        'GUILD_MEMBER', 
+        'USER']
 });
 
 // Initialize
@@ -37,10 +46,10 @@ client.once('clientReady', () => {
 // Command Handlers
 const afkHandler = require('./command-handlers/utility/afk-handler.js');
 const { triggerHandler } = require('./command-handlers/triggers/trigger-handler.js');
-//const { loggingHandler } = require('./command-handlers/logging/welcome-handler.js');
-//const { welcomeHandler } = require('./command-handlers/logging/log-handler.js');
+const { loggingHandler } = require('./command-handlers/logging/log-handler.js');
 
 triggerHandler(client);
+loggingHandler(client);
 
 client.on('messageCreate', async (message) => {
     try {

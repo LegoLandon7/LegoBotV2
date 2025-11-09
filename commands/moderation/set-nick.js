@@ -5,17 +5,18 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('set-nick')
         .setDescription('Changes the nickname of a specified user.')
+        .addUserOption(option =>
+            option
+                .setName('target_user')
+                .setDescription('The user whose nickname you want to change.')
+                .setRequired(true)
+        ) 
         .addStringOption(option =>
             option
                 .setName('nickname')
                 .setDescription('The new nickname to assign to the user.')
                 .setRequired(true)
-        )
-        .addUserOption(option =>
-            option
-                .setName('target_user')
-                .setDescription('The user whose nickname you want to change.')
-                .setRequired(false)
+
         ).setDefaultMemberPermissions(PermissionFlagsBits.ManageNicknames),
 
     async execute(interaction) {

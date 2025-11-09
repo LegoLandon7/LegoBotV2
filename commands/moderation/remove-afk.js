@@ -28,7 +28,7 @@ module.exports = {
         .addUserOption(option =>
             option.setName('target_user')
                 .setDescription('The user to remove the AFK status from')
-                .setRequired(false)
+                .setRequired(true)
         ).setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
 
     async execute(interaction) {
