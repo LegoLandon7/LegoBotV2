@@ -19,7 +19,7 @@ Then make sure the arguments in the [] brackets are the actual data needed.
 
 In the terminal make sure to run the following command:
 
-`npm install discord.js dotenv`
+`npm install discord.js dotenv archiver`
 
 This will install the required libraries for the bot to work.
 
