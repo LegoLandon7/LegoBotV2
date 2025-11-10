@@ -10,7 +10,10 @@ function createEmbed(title, color, content, user) {
         .setDescription(content)
         .setTimestamp();
 
-    if (user) {embed.setThumbnail(user.displayAvatarURL({ dynamic: true }))}
+    if (user) {
+        embed.setThumbnail(user.displayAvatarURL({ dynamic: true }));
+        embed.setFooter({text: `${user.tag} | ${user.id}`})
+    }
 
     return embed;
 }
@@ -39,7 +42,7 @@ function loggingHandler(client) {
         if (oldMessage.content === newMessage.content) return;
 
         sendLog(newMessage.guild, createEmbed("Message Updated", EMBED_COLORS.MEDIUM, [
-            `• **User:** ${newMessage.author.tag} (\`${newMessage.author.id}\`)`,
+            `• **User:** ${newMessage.author}`,
             `• **Channel:** ${newMessage.channel}`,
             `• **New:** ${newMessage.content || "[NONE]"}`,
              `• **Old:** ${oldMessage.content || "[NONE]"}`,
@@ -50,7 +53,7 @@ function loggingHandler(client) {
     // Message Deleted
     client.on("messageDelete", (message) => {
         sendLog(message.guild, createEmbed("Message Removed", EMBED_COLORS.BAD, [
-            `• **User:** ${message.author.tag} (\`${message.author.id}\`)`,
+            `• **User:** ${message.author}`,
             `• **Channel:** ${message.channel}`,
             `• **Message:** ${message.content || "[NONE]"}`,
             (message.attachments.size ? `• **Attachments:** ${message.attachments.map(a => a.name || a.url).join(', ')}` : '')
@@ -61,7 +64,7 @@ function loggingHandler(client) {
         // Avatar Updated
         if (oldMember.user.avatar !== newMember.user.avatar) {
             sendLog(newMember.guild, createEmbed("Avatar Updated", EMBED_COLORS.MEDIUM, [
-                `• **User:** ${newMember.user.tag} (\`${newMember.user.id}\`)`,
+                `• **User:** ${newMember.user}`,
                 ].join('\n'), newMember.user));
         }
 
@@ -73,10 +76,8 @@ function loggingHandler(client) {
         const removedRoles = oldRoles.filter(r => !newRoles.some(n => n.id === r.id));
 
         if (addedRoles.length || removedRoles.length) {
-            
-
             sendLog(newMember.guild, createEmbed("Roles Updated", EMBED_COLORS.MEDIUM, [
-                `• **User:** ${newMember.user.tag} (\`${newMember.user.id}\`)`,
+                `• **User:** ${newMember.user}`,
                 `• **Added Roles:** ${addedRoles.map(r => `<@&${r.id}>`).join(", ") || "[NONE]"}`,
                 `• **Removed Roles:** ${removedRoles.map(r => `<@&${r.id}>`).join(", ") || "[NONE]"}`,
             ].join("\n"), newMember.user));
@@ -91,14 +92,14 @@ function loggingHandler(client) {
                 // Timeout applied
                 const duration = newTimeout - Date.now();
                 sendLog(newMember.guild, createEmbed("Timeout Added", EMBED_COLORS.BAD, [
-                    `• **User:** ${newMember.user.tag} (\`${newMember.user.id}\`)`,
+                    `• **User:** ${newMember.user}`,
                     `• **Time:** ${formatDuration(duration)}`,
                     `• **Reason:** ${newTimeout.reason}`,
                     ].join('\n'), newMember.user));
             } else if (!newTimeout || newTimeout <= Date.now()) {
                 // Timeout removed
                 sendLog(newMember.guild, createEmbed("Timeout Removed", EMBED_COLORS.GOOD, [
-                    `• **User:** ${newMember.user.tag} (\`${newMember.user.id}\`)`,
+                    `• **User:** ${newMember.user}`,
                     ].join('\n'), newMember.user));
             }
         }
@@ -107,11 +108,11 @@ function loggingHandler(client) {
     // Member Join
     client.on("guildMemberAdd", (member) => {
         sendLog(member.guild, createEmbed("Member Joined", EMBED_COLORS.GOOD, [
-            `• **User:** ${member.user.tag} (\`${member.user.id}\`)`,
+            `• **User:** ${member.user}`,
             `• **Account Created:** ${new Date(member.user.createdTimestamp).toLocaleString()}`,
             ].join('\n'), member.user));
         sendWelcome(member.guild, createEmbed("Member Joined", EMBED_COLORS.GOOD, [
-            `• **User:** ${member} | ${member.user.tag}`,
+            `• **User:** ${member}`,
             `• **Joined Server:** ${new Date(member.joinedTimestamp).toLocaleString()}`,
             ].join('\n'), member.user));
     });
@@ -119,11 +120,11 @@ function loggingHandler(client) {
     // Member Leave
     client.on("guildMemberRemove", (member) => {
         sendLog(member.guild, createEmbed("Member Left", EMBED_COLORS.BAD, [
-            `• **User:** ${member.user.tag} (\`${member.user.id}\`)`,
+            `• **User:** ${member.user}`,
             `• **Account Created:** ${new Date(member.user.createdTimestamp).toLocaleString()}`,
             ].join('\n'), member.user));
         sendWelcome(member.guild, createEmbed("Member Left", EMBED_COLORS.BAD, [
-            `• **User:** ${member} | ${member.user.tag}`,
+            `• **User:** ${member}}`,
             `• **Joined Server:** ${new Date(member.joinedTimestamp).toLocaleString()}`,
             ].join('\n'), member.user));
     });
@@ -143,7 +144,7 @@ function loggingHandler(client) {
     // Ban Member
     client.on("guildBanAdd", (ban) => {
         sendLog(ban.guild, createEmbed("User Banned", EMBED_COLORS.BAD, [
-            `• **User:** ${ban.user.tag} (\`${ban.user.id}\`)`,
+            `• **User:** ${ban.user}`,
             `• **Reason:** ${ban.reason || "[NONE]"}`,
             ].join('\n'), ban.user));
     });
@@ -152,7 +153,7 @@ function loggingHandler(client) {
     client.on("guildBanRemove", (ban) => {
         
         sendLog(ban.guild, createEmbed("User Un-banned", EMBED_COLORS.GOOD, [
-            `• **User:** ${ban.user.tag} (\`${ban.user.id}\`)`,
+            `• **User:** ${ban.user}`,
             ].join('\n'), ban.user));
     });
 }
