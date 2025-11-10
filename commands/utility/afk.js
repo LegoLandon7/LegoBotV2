@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
-const { EMBED_COLORS } = require('../../functions/global/global-vars');
+const { EMBED_COLORS } = require('../../utility/global/global-vars');
 
 const filePath = path.join(__dirname, '../../data/utility/afk-users.json');
 
