@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, MessageFlags, Collection } = require('discord.js');
-const { EMBED_COLORS } = require('../../functions/global/global-vars');
+const { EMBED_COLORS } = require('../../utility/global/global-vars');
 
 module.exports = {
     data: new SlashCommandBuilder()

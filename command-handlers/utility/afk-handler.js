@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { formatDuration } = require('../../functions/formatting/format-duration.js');
+const { formatDuration } = require('../../utility/formatting/format-duration.js');
 const { MessageFlags } = require('discord.js');
 
 const filePath = path.join(__dirname, '../../data/utility/afk-users.json');

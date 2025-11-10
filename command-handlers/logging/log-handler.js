@@ -1,6 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
-const { formatDuration } = require("../../functions/formatting/format-duration.js");
-const { EMBED_COLORS } = require("../../functions/global/global-vars.js");
+const { formatDuration } = require("../../utility/formatting/format-duration.js");
+const { EMBED_COLORS } = require("../../utility/global/global-vars.js");
 const { getLogChannel, getWelcomeChannel } = require("./save-log-channels.js");
 
 function createEmbed(title, color, content, user) {
