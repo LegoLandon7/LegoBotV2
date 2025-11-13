@@ -60,14 +60,15 @@ function loggingHandler(client) {
             ].join('\n'), message.author));
         });
 
-    client.on("guildMemberUpdate", (oldMember, newMember) => {
+    client.on("userUpdate", (oldUser, newUser) => {
         // Avatar Updated
-        if (oldMember.user.avatar !== newMember.user.avatar) {
+        if (oldUser.avatar !== newUser.avatar) {
             sendLog(newMember.guild, createEmbed("Avatar Updated", EMBED_COLORS.MEDIUM, [
-                `• **User:** ${newMember.user}`,
-                ].join('\n'), newMember.user));
-        }
-
+                `• **User:** ${oldUser}`,
+                ].join('\n'), newUser));
+        } 
+    });
+    client.on("guildMemberUpdate", (oldMember, newMember) => {
         // Role Updated
         const oldRoles = oldMember.roles.cache.map(r => r);
         const newRoles = newMember.roles.cache.map(r => r);
